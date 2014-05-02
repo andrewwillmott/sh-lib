@@ -7,12 +7,8 @@
 
 #include "VL234f.h"
 
-namespace SP
+namespace SHL
 {
-    ////////////////////////////////////////////////////////////////////////////////
-    // Declarations
-    //
-
     // Basic SH utilities
 
     void AddColourSample(const Vec4f& s, const Vec3f& dir, int numBands, Vec4f* coeffs);
@@ -21,7 +17,7 @@ namespace SP
     ///< Cheaper version of AddColourSample that assumes the destination is reflected about the xy plane,
     ///< useful for functions defined only over one hemisphere.
 
-    Vec4f SampleColor(const Vec4f* coeffs, int numBands, const Vec3f& v);
+    Vec4f SampleColour(const Vec4f* coeffs, int numBands, const Vec3f& v);
     ///< Reconstruct colour in given direction. Handles between 2 and 5 bands. (4 to 25 coeffs.)
 
     // 7-band ZH utilities, all assume 7 coefficients.
@@ -71,8 +67,8 @@ namespace SP
 
     void RotateZHToSHAdd(const Vec3f& dir, int numBands, const float* zcoeffs, float* coeffs);
     void RotateZHToSHAdd(const Vec3f& dir, int numBands, const Vec4f* zcoeffs, Vec4f* coeffs);
-    void RotateZHToSHAdd(const Vec3f& dir, int numBands, const Vec4f& color, const float* zcoeffs, Vec4f* coeffs);
-    ///< Apply orientation to given ZHs, multiply by color, and accumulate the result in coeffs. 
+    void RotateZHToSHAdd(const Vec3f& dir, int numBands, const Vec4f& c, const float* zcoeffs, Vec4f* coeffs);
+    ///< Apply orientation to given ZHs, multiply by c, and accumulate the result in coeffs.
     ///< Handles n <= 8.
 
     void RotateSHAboutZ(float theta, int numBands, float* coeffs);
@@ -134,13 +130,13 @@ namespace SP
     // Environment map support
     struct cImageData32
     {
-        const uint32_t* mData;
+        const uint32_t* mData;  // 32-bit BGRA8
         int mWidth;
         int mHeight;
     };
     struct cImageData48
     {
-        const uint16_t* mData;
+        const uint16_t* mData;  // 48-bit RGB16
         int mWidth;
         int mHeight;
     };
@@ -148,9 +144,11 @@ namespace SP
     void FindSHCoeffsFromHemiEnvMap(const cImageData32* image, int n, float* coeffsR, float* coeffsG, float* coeffsB);
     void FindSHCoeffsFromHemiEnvMap(const cImageData48* image, int n, float* coeffsR, float* coeffsG, float* coeffsB);
     ///< Extract coeffs from Devebec-style hemi env map.
+
     void FindSHCoeffsFromHemiEnvMap(const cImageData32* image, int n, Vec4f* coeffs);
     void FindSHCoeffsFromHemiEnvMap(const cImageData48* image, int n, Vec4f* coeffs);
     ///< Extract coeffs from Devebec-style hemi env map.
+
     void FindSHCoeffsFromHDRCubeMap(const cImageData48* image, int n, Vec4f* coeffs);
     ///< Extract coeffs from 16-bit cube map.
 
@@ -176,7 +174,7 @@ namespace SP
     struct cSphereLight
     {
         Vec4f   mColourAndIntensity;    ///< r, g, b, intensity
-        Vec4f   mPositionAndSize;       ///< location, size         note: Vec4f because it's aligned and I don't have time to switch Vec4f.
+        Vec4f   mPositionAndSize;       ///< location, size
     };
 
     void AddSphereLighting(Vec3f pos, float scale, int numLights, const cSphereLight* lights, Vec4f* coeffs);
