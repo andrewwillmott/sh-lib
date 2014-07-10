@@ -3540,7 +3540,7 @@ void SHL::FindSHCoeffsFromHDRCubeMap(const cImageData48* image, int numBands, Ve
 
                 float fr2 = sqr(fx) + sqr(fy) + 1.0f;
                 float dn = fr2 * sqrtf(fr2);
-                float domega = domega0 / fr2;     // 4/w^2  *  (x^2 + y^2 + 1) ^ -3/2
+                float domega = domega0 / dn;     // 4/w^2  *  (x^2 + y^2 + 1) ^ -3/2
 
                 float u = kFaceTable[face].mUX * fx + kFaceTable[face].mUY * fy;
                 float v = kFaceTable[face].mVX * fx + kFaceTable[face].mVY * fy;
