@@ -1,12 +1,21 @@
 #include <stdint.h>
 
+
+
 typedef float Real;
 
+
+
     #define CL_ASSERT(M_X)
+
     #define CL_ASSERT_MSG(M_X, M_MSG)
+
     #define CL_RANGE_MSG(M_X, M_0, M_1, M_MSG)
+
     #define CL_ERROR(M_X)
+
     #define CL_WARNING(M_X)
+
 #include <stdlib.h>
 #include <math.h>
 
@@ -409,7 +418,7 @@ inline Vec2f cross(const Vec2f& a)
 
 inline float len(const Vec2f& v)
 {
-    return(sqrt(dot(v, v)));
+    return(sqrtf(dot(v, v)));
 }
 
 inline float sqrlen(const Vec2f& v)
@@ -862,7 +871,7 @@ inline float dot(const Vec3f& a, const Vec3f& b)
 
 inline float len(const Vec3f& v)
 {
-    return(sqrt(dot(v, v)));
+    return(sqrtf(dot(v, v)));
 }
 
 inline float sqrlen(const Vec3f& v)
@@ -1267,7 +1276,7 @@ inline float dot(const Vec4f& a, const Vec4f& b)
 
 inline float len(const Vec4f& v)
 {
-    return(sqrt(dot(v, v)));
+    return(sqrtf(dot(v, v)));
 }
 
 inline float sqrlen(const Vec4f& v)

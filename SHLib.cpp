@@ -3288,7 +3288,7 @@ void SHL::FindSHCoeffsFromHemiEnvMap(const cImageData32* image, int n, float* co
 
     for (int y = 0; y < height; y++)
     {
-        float fy = 2.0f * (y + 0.5) / float(height) - 1.0f;
+        float fy = 2.0f * (y + 0.5f) / float(height) - 1.0f;
         
         const uint32_t* span = data + width * y;
         
@@ -3530,13 +3530,13 @@ void SHL::FindSHCoeffsFromHDRCubeMap(const cImageData48* image, int numBands, Ve
 
         for (int y = 0; y < faceSize; y++)
         {
-            float fy = -2 * (y + 0.5) / float(faceSize) + 1;
+            float fy = -2 * (y + 0.5f) / float(faceSize) + 1;
             
             const uint16_t* pixel = faceData + strideY * y;
             
             for (int x = 0; x < faceSize; x++)
             {
-                float fx = 2 * (x + 0.5) / float(faceSize) - 1;
+                float fx = 2 * (x + 0.5f) / float(faceSize) - 1;
 
                 float fr2 = sqr(fx) + sqr(fy) + 1.0f;
                 float dn = fr2 * sqrtf(fr2);
