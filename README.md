@@ -22,3 +22,5 @@ Or add those files to your favourite IDE.
 
 See the shaders directory for some of these routines recast in GLSL. There is
 a corresponding [shader toy demo](https://www.shadertoy.com/view/dl3Bz8).
+
+https://github.com/andrewwillmott/sh-lib/assets/4959327/fe11cffe-49fa-455c-9a6b-21de4d04e900
