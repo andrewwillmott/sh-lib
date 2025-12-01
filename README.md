@@ -20,6 +20,9 @@ To build and run the test app:
 
 Or add those files to your favourite IDE.
 
+There is an [interactive demo](https://andrewwillmott.github.io/app/DemoApp.html?test=Spherical%20Harmonics&ui.hue=210)
+of some of this functionality.
+
 See the shaders directory for some of these routines recast in GLSL. There is
 a corresponding [shader toy demo](https://www.shadertoy.com/view/dl3Bz8).
 
