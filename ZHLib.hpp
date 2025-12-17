@@ -1,11 +1,15 @@
-//------------------------------------------------------------------------------
-// Zonal Harmonics Utility Library
-//------------------------------------------------------------------------------
+//
+// ZHLib.hpp
+//
+// Spherical Harmonics utility library
+//
+// Andrew Willmott
+//
 
 #ifndef ZH_LIB_H
 #define ZH_LIB_H
 
-#include "VL234f.h"
+#include "VL234f.hpp"
 
 namespace ZHL
 {

@@ -16,9 +16,14 @@ least 5 (SH) or 7 (ZH). This is noted in the comments where it applies.
 
 To build and run the test app:
 
-    c++ ZHLib.cpp SHLib.cpp SHLibTest.cpp -o shtest && ./shtest
+    c++ ZHLib.cpp SHLib.cpp SHLibTest.cpp -o test && ./test
 
 Or add those files to your favourite IDE.
+
+There is also a makefile supplied -- run `make` to build release and debug
+versions of the library, and `make test` for the test app. `make install` will
+install the library and headers under /usr/local, or use `PREFIX=/my/path make
+install` for other locations.
 
 There is an [interactive demo](https://andrewwillmott.github.io/app/DemoApp.html?test=Spherical%20Harmonics&ui.hue=210)
 of some of this functionality.

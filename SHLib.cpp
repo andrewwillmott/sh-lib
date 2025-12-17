@@ -1,22 +1,32 @@
-//------------------------------------------------------------------------------
-// SH Utility Library
-//------------------------------------------------------------------------------
+//
+// SHLib.cpp
+//
+// Spherical Harmonics utility library
+//
+// Andrew Willmott
+//
 
-#include "SHLib.h"
+#include "SHLib.hpp"
 
-#include "ZHLib.h"  // only for WindowScale, kZH_Y, so could decouple.
+#include "ZHLib.hpp"  // only for WindowScale, kZH_Y, so could decouple.
 
 using namespace SHL;
 using namespace ZHL;
 
+#ifdef _MSC_VER
+// double->float init
+#pragma warning(push)
+#pragma warning(disable : 4305)
+#endif
+
 namespace
 {
-    const float kFourPi = 4 * vl_pi;
+    const float kFourPi = 4 * vlf_pi;
 
     // The normalization constants themselves are given by
-    //   sqrtf(((2l + 1) (l - m)!)  / (4 pi (l + m)!))
-    // However, we also roll in any overall multipliers from the
-    // basis function itself. (E.g., the b.f. for Y_22 is (x^2 - y^2) / 2.)
+    //   sqrt(((2l + 1) (l - m)!)  / (4 pi (l + m)!))
+    // However, we also roll in any overall multipliers from the basis function
+    // itself. (E.g., the b.f. for Y_22 = kSH_Y_24 is (x^2 - y^2) / 2.)
 
     // normalization constants                            basis function:
     const float kSH_Y_00 = sqrtf( 1 / ( kFourPi));          // 1
@@ -62,6 +72,10 @@ namespace
     //const float kSH_A3 = 0.0f;
     const float kSH_A4 = -(1.0f / 24.0f);
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 namespace
 {
@@ -162,7 +176,7 @@ float SHL::SH(int l, int m, float theta, float phi)
     if (m == 0)
         return term1;
 
-    phi += vl_pi;
+    phi += vlf_pi;
 
     if (m > 0)
         return term1 * kRoot2 * cosf(pm * phi);
@@ -626,6 +640,11 @@ void SHL::AddSHSampleHemi(Vec4f s, Vec3f v, int numBands, Vec4f coeffs[])
     ::AddSHSampleHemi<Vec4f>(s, v, numBands, coeffs);
 }
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4244)
+#pragma warning(disable : 4305)
+#endif
 
 namespace
 {
@@ -837,6 +856,10 @@ namespace
     }
 }
 
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
 void SHL::RotateZHToSH(const Vec3f& dir, int n, const float zcoeffs[], float coeffs[])
 {
 #ifdef REFERENCE
@@ -856,6 +879,11 @@ void SHL::RotateZHToSH(const Vec3f& dir, int n, const Vec4f* zcoeffs, Vec4f* coe
 {
     ::RotateZHToSH<Vec4f>(dir, n, zcoeffs, coeffs);
 }
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4305)
+#endif
 
 namespace
 {
@@ -987,6 +1015,10 @@ namespace
     }
 }
 
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
 void SHL::RotateZHToSHAdd(const Vec3f& dir, int n, const float zcoeffs[], float coeffs[])
 {
     ::RotateZHToSHAdd<float>(dir, n, zcoeffs, coeffs);
@@ -1070,6 +1102,11 @@ void SHL::MirrorSHInZ(int n, Vec4f* coeffs)
                 coeffs[index] = -coeffs[index];
             }
 }
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4305)
+#endif
 
 namespace
 {
@@ -2000,24 +2037,28 @@ namespace
     }
 }
 
-void SHL::RRotateSH(const Mat3f& rot_row, int n, const float* coeffsIn, float* coeffs)
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+void SHL::RRotateSH(const Mat3f& rotRow, int n, const float* coeffsIn, float* coeffs)
 {
-    ::RotateSH<float>(rot_row, n, coeffsIn, coeffs);
+    ::RotateSH<float>(rotRow, n, coeffsIn, coeffs);
 }
 
-void SHL::RRotateSH(const Mat3f& rot_row, int n, const Vec4f* coeffsIn, Vec4f* coeffs)
+void SHL::RRotateSH(const Mat3f& rotRow, int n, const Vec4f* coeffsIn, Vec4f* coeffs)
 {
-    ::RotateSH<Vec4f>(rot_row, n, coeffsIn, coeffs);
+    ::RotateSH<Vec4f>(rotRow, n, coeffsIn, coeffs);
 }
 
-void SHL::CRotateSH(const Mat3f& rot_col, int n, const float* coeffsIn, float* coeffs)
+void SHL::CRotateSH(const Mat3f& rotCol, int n, const float* coeffsIn, float* coeffs)
 {
-    ::RotateSH<float>(trans(rot_col), n, coeffsIn, coeffs);
+    ::RotateSH<float>(trans(rotCol), n, coeffsIn, coeffs);
 }
 
-void SHL::CRotateSH(const Mat3f& rot_col, int n, const Vec4f* coeffsIn, Vec4f* coeffs)
+void SHL::CRotateSH(const Mat3f& rotCol, int n, const Vec4f* coeffsIn, Vec4f* coeffs)
 {
-    ::RotateSH<Vec4f>(trans(rot_col), n, coeffsIn, coeffs);
+    ::RotateSH<Vec4f>(trans(rotCol), n, coeffsIn, coeffs);
 }
 
 namespace
@@ -2142,6 +2183,11 @@ void SHL::RemoveNormalizationConstants(int n, Vec4f* coeffs)
     ::RemoveNormalizationConstants<Vec4f>(n, coeffs);
 }
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4244)
+#endif
+
 namespace
 {
     const float kSH_Ym_00 = 1.0             / kSH_Y_00; // 1
@@ -2170,6 +2216,10 @@ namespace
     const float kSH_Ym_47 = 3.079202        / kSH_Y_47; // (x^2 - 3y^2) xz
     const float kSH_Ym_48 = 1.0             / kSH_Y_48; // (x^4 - 6 x^2 y^2 + y^4)
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 void SHL::ApplyMaxScale(int n, Vec4f* coeffs)
 {
@@ -2422,6 +2472,11 @@ void SHL::ApplySHWindowing(float gamma, int n, Vec4f* coeffs)
 // SH Multiplication. Requires triple-product basis coefficients.
 //
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4305)
+#endif
+
 void SHL::MultiplySHByZH3(const float a[9], const float b[3], float c[9])
 {
     VL_ASSERT(a != b && b != c);
@@ -2431,27 +2486,27 @@ void SHL::MultiplySHByZH3(const float a[9], const float b[3], float c[9])
     c[0] += a[6] * b[2] * kSH_Y_00;
 
     c[1]  = a[1] * b[0] * kSH_Y_00;
-    c[1] += a[5] * b[1] * kSH_Y_00 * kSqrt03_05;
+    c[1] += a[5] * b[1] * kSH_Y_00 *  kSqrt03_05;
     c[1] += a[1] * b[2] * kSH_Y_00 * -kSqrt01_05; // kSH_Y_00 * kSqrt01_05
     c[2]  = a[2] * b[0] * kSH_Y_00;
     c[2] += a[0] * b[1] * kSH_Y_00;
-    c[2] += a[6] * b[1] * kSH_Y_00 * kSqrt04_05; // kSH_Y_00 * kSqrt04_05
-    c[2] += a[2] * b[2] * kSH_Y_00 * kSqrt04_05;
+    c[2] += a[6] * b[1] * kSH_Y_00 *  kSqrt04_05; // kSH_Y_00 * kSqrt04_05
+    c[2] += a[2] * b[2] * kSH_Y_00 *  kSqrt04_05;
     c[3]  = a[3] * b[0] * kSH_Y_00;
-    c[3] += a[7] * b[1] * kSH_Y_00 * kSqrt03_05;
+    c[3] += a[7] * b[1] * kSH_Y_00 *  kSqrt03_05;
     c[3] += a[3] * b[2] * kSH_Y_00 * -kSqrt01_05;
 
     c[4]  = a[4] * b[0] * kSH_Y_00;
     c[4] += a[4] * b[2] * -0.180258f;
     c[5]  = a[5] * b[0] * kSH_Y_00;
-    c[5] += a[1] * b[1] * kSH_Y_00 * kSqrt03_05;
+    c[5] += a[1] * b[1] * kSH_Y_00 *  kSqrt03_05;
     c[5] += a[5] * b[2] * 0.0901372f;
     c[6]  = a[6] * b[0] * kSH_Y_00;
-    c[6] += a[2] * b[1] * kSH_Y_00 * kSqrt04_05;
+    c[6] += a[2] * b[1] * kSH_Y_00 *  kSqrt04_05;
     c[6] += a[0] * b[2] * kSH_Y_00;
     c[6] += a[6] * b[2] * 0.180203f;
     c[7]  = a[7] * b[0] * kSH_Y_00;
-    c[7] += a[3] * b[1] * kSH_Y_00 * kSqrt03_05;
+    c[7] += a[3] * b[1] * kSH_Y_00 *  kSqrt03_05;
     c[7] += a[7] * b[2] * 0.0900888f;
     c[8]  = a[8] * b[0] * kSH_Y_00;
     c[8] += a[8] * b[2] * -0.180213f;
@@ -2913,6 +2968,10 @@ namespace
     }
 }
 
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
 void SHL::MultiplySH(int numBands, const float* a, const float* b, float* c)
 {
     switch (numBands)
@@ -2979,7 +3038,7 @@ namespace
         float& theta = *thetaOut;
         float& phi   = *phiOut;
 
-        theta = sqrtf(fr2) * vl_pi;
+        theta = sqrtf(fr2) * vlf_pi;
         phi   = atan2f(fy, fx);
         *domega = domega0 * sinf(theta) / theta;
     }
@@ -2992,7 +3051,7 @@ void SHL::FindSHCoeffsFromHemiEnvMap(const ImageData32* image, int n, float* coe
 
     const uint32_t* data = image->mData;
 
-    float domega0 = sqr(vl_twoPi / float(width));
+    float domega0 = sqr(vlf_twoPi / float(width));
 
     for (int y = 0; y < height; y++)
     {
@@ -3039,7 +3098,7 @@ void SHL::FindSHCoeffsFromHemiEnvMap(const ImageData32* image, int n, Vec4f* coe
 
     const uint32_t* data  = image->mData;
 
-    float domega0 = sqr(vl_twoPi / float(width));
+    float domega0 = sqr(vlf_twoPi / float(width));
 
     for (int y = 0; y < height; y++)
     {
@@ -3089,7 +3148,7 @@ void SHL::FindSHCoeffsFromHemiEnvMap(const ImageData48* image, int n, float* coe
 
     const uint16_t* data  = image->mData;
 
-    float domega0 = sqr(vl_twoPi / float(width)) * (1.0f / 65535.0f);
+    float domega0 = sqr(vlf_twoPi / float(width)) * (1.0f / 65535.0f);
 
     for (int y = 0; y < height; y++)
     {
@@ -3138,7 +3197,7 @@ void SHL::FindSHCoeffsFromHemiEnvMap(const ImageData48* image, int n, Vec4f* coe
 
     const uint16_t* data  = image->mData;
 
-    float domega0 = sqr(vl_twoPi / float(width)) * (1.0f / 65535.0f);
+    float domega0 = sqr(vlf_twoPi / float(width)) * (1.0f / 65535.0f);
 
     for (int y = 0; y < height; y++)
     {
@@ -3341,10 +3400,10 @@ void SHL::AddSphereLighting(Vec3f pos, float scale, int numLights, const SphereL
         dir /= sqrtf(r2) + 1e-6f;
 
         const int bands = 4;
-        float z0 = strength * (vl_twoPi * kZH_Y[0]) * (1.0f - t);
-        float z1 = strength * (vl_twoPi * kZH_Y[1]) * 0.5f * (1.0f - t2);
-        float z2 = strength * (vl_twoPi * kZH_Y[2]) * t * (1.0f - t2);
-        float z3 = strength * (vl_twoPi * kZH_Y[3]) * 0.25f * (t2 * (6.0f - 5.0f * t2) - 1.0f);
+        float z0 = strength * (vlf_twoPi * kZH_Y[0]) * (1.0f - t);
+        float z1 = strength * (vlf_twoPi * kZH_Y[1]) * 0.5f * (1.0f - t2);
+        float z2 = strength * (vlf_twoPi * kZH_Y[2]) * t * (1.0f - t2);
+        float z3 = strength * (vlf_twoPi * kZH_Y[3]) * 0.25f * (t2 * (6.0f - 5.0f * t2) - 1.0f);
 
         zcoeffs[0] = colour * z0;
         zcoeffs[1] = colour * z1;

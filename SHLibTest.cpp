@@ -2,10 +2,8 @@
 // SH Library Test
 //------------------------------------------------------------------------------
 
-#define VL_DEBUG
-
-#include "SHLib.h"
-#include "ZHLib.h"
+#include "SHLib.hpp"
+#include "ZHLib.hpp"
 
 using namespace SHL;
 using namespace ZHL;

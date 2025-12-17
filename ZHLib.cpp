@@ -1,14 +1,23 @@
-//------------------------------------------------------------------------------
-// Zonal Harmonics Utility Library
-//------------------------------------------------------------------------------
+//
+// ZHLib.cpp
+//
+// Spherical Harmonics utility library
+//
+// Andrew Willmott
+//
 
-#include "ZHLib.h"
+#include "ZHLib.hpp"
 
 using namespace ZHL;
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4244)
+#endif
+
 namespace
 {
-    const float kFourPi = 4 * vl_pi;
+    const float kFourPi = 4 * vlf_pi;
 
     // The 'central' (z-symmetric, m=0) basis function set is a legendre poly in z:
     //   1, z, (3z^2 - 1), (5z^3 - 3z), 3 - 30z^2 + 35z^4 ...
@@ -47,11 +56,15 @@ namespace
     //   integral[-1;1]  f(z) . 2pi dz
 }
 
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
 namespace
 {
     inline float ZH_K(int l)
     {
-        return sqrtf(float(2 * l + 1) / (4.0f * vl_pi));
+        return sqrtf(float(2 * l + 1) / (4 * vlf_pi));
     }
 
     float ZH_P(int l, float x)
@@ -97,7 +110,7 @@ const float ZHL::kZH_Y[7] =
 
 // Main ZH utils
 
-void ZHL::CalcZHWeights(float z, int numBands, float w[7])
+void ZHL::CalcZHWeights(float z, int numBands, float w[])
 {
     float z2, z3, z4, z5, z6;
 
@@ -163,7 +176,7 @@ float ZHL::SampleZH(float z, int numBands, const float zcoeffs[])
     return result;
 }
 
-float ZHL::SampleZH_p1(int numBands, const float zcoeffs[7])
+float ZHL::SampleZH_p1(int numBands, const float zcoeffs[])
 {
     float result = kZH_Y_0 * zcoeffs[0];
 
@@ -314,13 +327,13 @@ void ZHL::CalcCosPowerZH7(int n, float zcoeffs[7])
     }
 
     // apply norm constants
-    zcoeffs[0] *= vl_twoPi * kZH_Y_0;
-    zcoeffs[1] *= vl_twoPi * kZH_Y_1;
-    zcoeffs[2] *= vl_twoPi * kZH_Y_2;
-    zcoeffs[3] *= vl_twoPi * kZH_Y_3;
-    zcoeffs[4] *= vl_twoPi * kZH_Y_4;
-    zcoeffs[5] *= vl_twoPi * kZH_Y_5;
-    zcoeffs[6] *= vl_twoPi * kZH_Y_6;
+    zcoeffs[0] *= vlf_twoPi * kZH_Y_0;
+    zcoeffs[1] *= vlf_twoPi * kZH_Y_1;
+    zcoeffs[2] *= vlf_twoPi * kZH_Y_2;
+    zcoeffs[3] *= vlf_twoPi * kZH_Y_3;
+    zcoeffs[4] *= vlf_twoPi * kZH_Y_4;
+    zcoeffs[5] *= vlf_twoPi * kZH_Y_5;
+    zcoeffs[6] *= vlf_twoPi * kZH_Y_6;
 }
 
 void ZHL::CalcCosPowerSatZH7(float n, float zcoeffs[7])
@@ -334,13 +347,13 @@ void ZHL::CalcCosPowerSatZH7(float n, float zcoeffs[7])
     zcoeffs[6] = 231.0f / (n + 7) - 315.0f / (n + 5) + 105.0f / (n + 3) - 5.0f / (n + 1);
 
     // apply norm constants
-    zcoeffs[0] *= vl_twoPi * kZH_Y_0;
-    zcoeffs[1] *= vl_twoPi * kZH_Y_1;
-    zcoeffs[2] *= vl_twoPi * kZH_Y_2;
-    zcoeffs[3] *= vl_twoPi * kZH_Y_3;
-    zcoeffs[4] *= vl_twoPi * kZH_Y_4;
-    zcoeffs[5] *= vl_twoPi * kZH_Y_5;
-    zcoeffs[6] *= vl_twoPi * kZH_Y_6;
+    zcoeffs[0] *= vlf_twoPi * kZH_Y_0;
+    zcoeffs[1] *= vlf_twoPi * kZH_Y_1;
+    zcoeffs[2] *= vlf_twoPi * kZH_Y_2;
+    zcoeffs[3] *= vlf_twoPi * kZH_Y_3;
+    zcoeffs[4] *= vlf_twoPi * kZH_Y_4;
+    zcoeffs[5] *= vlf_twoPi * kZH_Y_5;
+    zcoeffs[6] *= vlf_twoPi * kZH_Y_6;
 }
 
 void ZHL::CalcHemisphereZH7(float zcoeffs[7])
@@ -348,12 +361,12 @@ void ZHL::CalcHemisphereZH7(float zcoeffs[7])
     // projection of cos(theta) >= 0 ? 1 : 0
     // by definition only anti-symmetrical z terms are non-zero.
     // before weighting, they're basically +- 0.5
-    zcoeffs[0] =  1.0f  * vl_twoPi * kZH_Y_0;
-    zcoeffs[1] =  0.5f  * vl_twoPi * kZH_Y_1;
+    zcoeffs[0] =  1.0f  * vlf_twoPi * kZH_Y_0;
+    zcoeffs[1] =  0.5f  * vlf_twoPi * kZH_Y_1;
     zcoeffs[2] =  0.0f;
-    zcoeffs[3] = -0.25f * vl_twoPi * kZH_Y_3;
+    zcoeffs[3] = -0.25f * vlf_twoPi * kZH_Y_3;
     zcoeffs[4] =  0.0f;
-    zcoeffs[5] =  0.5f  * vl_twoPi * kZH_Y_5;
+    zcoeffs[5] =  0.5f  * vlf_twoPi * kZH_Y_5;
     zcoeffs[6] =  0.0f;
 }
 
@@ -376,13 +389,13 @@ void ZHL::CalcGatedSpotZH7(float t, float zcoeffs[7])
     zcoeffs[6] =  5.0f * t - 35.0f * t3 + 63.0f * t5 - 33.0f * t7;
 
     // apply norm constants
-    zcoeffs[0] *= vl_twoPi * kZH_Y_0;
-    zcoeffs[1] *= vl_twoPi * kZH_Y_1;
-    zcoeffs[2] *= vl_twoPi * kZH_Y_2;
-    zcoeffs[3] *= vl_twoPi * kZH_Y_3;
-    zcoeffs[4] *= vl_twoPi * kZH_Y_4;
-    zcoeffs[5] *= vl_twoPi * kZH_Y_5;
-    zcoeffs[6] *= vl_twoPi * kZH_Y_6;
+    zcoeffs[0] *= vlf_twoPi * kZH_Y_0;
+    zcoeffs[1] *= vlf_twoPi * kZH_Y_1;
+    zcoeffs[2] *= vlf_twoPi * kZH_Y_2;
+    zcoeffs[3] *= vlf_twoPi * kZH_Y_3;
+    zcoeffs[4] *= vlf_twoPi * kZH_Y_4;
+    zcoeffs[5] *= vlf_twoPi * kZH_Y_5;
+    zcoeffs[6] *= vlf_twoPi * kZH_Y_6;
 }
 
 void ZHL::CalcGatedCosZH7(float t, float zcoeffs[7])
@@ -405,13 +418,13 @@ void ZHL::CalcGatedCosZH7(float t, float zcoeffs[7])
     zcoeffs[6] = 0.125f * (1.0f + 20.0f * t2 - 210.0f * t4 + 420.0f * t6 - 231.0f * t8);
 
     // apply norm constants
-    zcoeffs[0] *= vl_twoPi * kZH_Y_0;
-    zcoeffs[1] *= vl_twoPi * kZH_Y_1;
-    zcoeffs[2] *= vl_twoPi * kZH_Y_2;
-    zcoeffs[3] *= vl_twoPi * kZH_Y_3;
-    zcoeffs[4] *= vl_twoPi * kZH_Y_4;
-    zcoeffs[5] *= vl_twoPi * kZH_Y_5;
-    zcoeffs[6] *= vl_twoPi * kZH_Y_6;
+    zcoeffs[0] *= vlf_twoPi * kZH_Y_0;
+    zcoeffs[1] *= vlf_twoPi * kZH_Y_1;
+    zcoeffs[2] *= vlf_twoPi * kZH_Y_2;
+    zcoeffs[3] *= vlf_twoPi * kZH_Y_3;
+    zcoeffs[4] *= vlf_twoPi * kZH_Y_4;
+    zcoeffs[5] *= vlf_twoPi * kZH_Y_5;
+    zcoeffs[6] *= vlf_twoPi * kZH_Y_6;
 }
 
 void ZHL::CalcGatedCosBands5(float t, float bandScale[5])
@@ -485,7 +498,7 @@ void ZHL::CalcHGPhaseZH(float g, float weight, int n, float zcoeffs[])
     // simple power series in g when decomposed into zonal harmonics.
     for (int i = 0; i < n; i++)
     {
-        zcoeffs[i] = sqrtf(4.0f * vl_pi * float(i * 2 + 1)) * weight;
+        zcoeffs[i] = sqrtf(4.0f * vlf_pi * float(i * 2 + 1)) * weight;
         weight *= g;
     }
 }
@@ -497,7 +510,7 @@ void ZHL::CalcNormalizedHGPhaseZH(float g, float weight, int n, float zcoeffs[])
 
     for (int i = 0; i < n; i++)
     {
-        zcoeffs[i] = sqrtf(4.0f * vl_pi * float(i * 2 + 1)) * weight;
+        zcoeffs[i] = sqrtf(4.0f * vlf_pi * float(i * 2 + 1)) * weight;
         weight *= g;
     }
 }
@@ -507,7 +520,7 @@ void ZHL::ConvolveZH(int n, const float brdfCoeffs[], const float zhCoeffsIn[], 
     for (int i = 0; i < n; i++)
     {
         int n = (2 * i + 1);
-        float alpha = sqrtf(4.0f * vl_pi / n);
+        float alpha = sqrtf(4.0f * vlf_pi / n);
 
         zhCoeffsOut[i] = zhCoeffsIn[i] * brdfCoeffs[i] * alpha;
     }
@@ -564,6 +577,11 @@ void ZHL::ApplyZHWindowing(float gamma, int n, Vec4f* coeffs)
     for (int i = 0; i < n; i++)
         coeffs[i] *= WindowScale(i, gamma);
 }
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4305)
+#endif
 
 namespace
 {
@@ -722,6 +740,10 @@ namespace
     }
 }
 
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
 void ZHL::MultiplyZH(int numBands, const float* a, const float* b, float* c)
 {
     switch (numBands)
@@ -810,4 +832,3 @@ void ZHL::CalcAtmosphereZH
         VL_ERROR("unhandled bands\n");
     }
 }
-

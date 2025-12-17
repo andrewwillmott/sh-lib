@@ -1,11 +1,16 @@
-//------------------------------------------------------------------------------
-// Spherical/Zonal Harmonics Utility Library
-//------------------------------------------------------------------------------
+//
+// SHLib.hpp
+//
+// Spherical Harmonics utility library
+//
+// Andrew Willmott
+//
 
 #ifndef SH_LIB_H
 #define SH_LIB_H
 
-#include "VL234f.h"
+#include "VL234f.hpp"
+#include <stdint.h>
 
 namespace SHL
 {
@@ -42,10 +47,10 @@ namespace SHL
     void MirrorSHInZ(int n, float coeffs[]);  // Mirror given SH coeffs in Z.
     void MirrorSHInZ(int n, Vec4f coeffs[]);  // Mirror given SH coeffs in Z.
 
-    void RRotateSH(const Mat3f& rot_row, int n, const float coeffsIn[], float coeffsOut[]);  // Generic SH rotation by given rotation on row vectors. Pretty fast, but O(n^2). Handles n <= 8.
-    void RRotateSH(const Mat3f& rot_row, int n, const Vec4f coeffsIn[], Vec4f coeffsOut[]);  // Generic SH rotation by given rotation on row vectors.
-    void CRotateSH(const Mat3f& rot_col, int n, const float coeffsIn[], float coeffsOut[]);  // Generic SH rotation by given rotation on column vectors.
-    void CRotateSH(const Mat3f& rot_col, int n, const Vec4f coeffsIn[], Vec4f coeffsOut[]);  // Generic SH rotation by given rotation on column vectors.
+    void RRotateSH(const Mat3f& rotRow, int n, const float coeffsIn[], float coeffsOut[]);  // Generic SH rotation by given rotation on row vectors. Pretty fast, but O(n^2). Handles n <= 8.
+    void RRotateSH(const Mat3f& rotRow, int n, const Vec4f coeffsIn[], Vec4f coeffsOut[]);  // Generic SH rotation by given rotation on row vectors.
+    void CRotateSH(const Mat3f& rotCol, int n, const float coeffsIn[], float coeffsOut[]);  // Generic SH rotation by given rotation on column vectors.
+    void CRotateSH(const Mat3f& rotCol, int n, const Vec4f coeffsIn[], Vec4f coeffsOut[]);  // Generic SH rotation by given rotation on column vectors.
 
     // Normalisation and convolution
     void ApplyNormalizationConstants (int n, float coeffs[]);  // Premultiplies in normalization constants to coeffs. Only handles n <= 5.

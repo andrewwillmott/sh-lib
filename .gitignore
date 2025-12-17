@@ -1,1 +1,4 @@
-shtest
+test
+*.o
+*.a
+*.dSYM
