@@ -6,8 +6,8 @@ ifeq ($(origin CXX), default) # gmake defaults this to g++ instead of c++
 	CXX = c++
 endif
 CXXFLAGS ?= --std=c++11
-OPTS=-O3 -Wall
-DBG_OPTS=-DVL_DEBUG -g
+OPTS ?= -O3 -Wall
+DBG_OPTS ?= -DVL_DEBUG -g
 
 PREFIX ?= /usr/local
 LIB_DIR = $(PREFIX)/lib
@@ -21,8 +21,8 @@ SHL_DOBJS   = $(SHL_SOURCES:.cpp=D.o)
 
 all: libsh.a libshd.a
 
-test: libshd.a ${SHL_HEADERS} SHLibTest.cpp
-	$(CXX) $(CXXFLAGS) $(DBG_OPTS) -o $@ -L. -lshd SHLibTest.cpp
+test: libshd.a $(SHL_DEPS) SHLibTest.cpp
+	$(CXX) $(CXXFLAGS) $(DBG_OPTS) -o $@ SHLibTest.cpp -L. -lshd
 	./$@
 
 libsh.a: $(SHL_OBJS)
@@ -31,10 +31,10 @@ libsh.a: $(SHL_OBJS)
 libshd.a: $(SHL_DOBJS)
 	$(AR) rcs $@ $^
 
-%.o: %.cpp $(SHL_HEADERS)
+%.o: %.cpp $(SHL_DEPS)
 	$(CXX) $(CXXFLAGS) $(OPTS) -c $< -o $@
 
-%D.o: %.cpp $(SHL_HEADERS)
+%D.o: %.cpp $(SHL_DEPS)
 	$(CXX) $(CXXFLAGS) $(DBG_OPTS) -c $< -o $@
 
 install: libsh.a libshd.a
@@ -44,4 +44,4 @@ install: libsh.a libshd.a
 	cp $(SHL_HEADERS) $(INCLUDE_DIR)
 
 clean:
-	rm -rf *.o *.a *.dSYM test
+	$(RM) -rf *.o *.a *.dSYM test

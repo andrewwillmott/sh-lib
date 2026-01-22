@@ -3384,7 +3384,7 @@ void SHL::AddSphereLighting(Vec3f pos, float scale, int numLights, const SphereL
     {
         const Vec4f& colour = lights[i].mColourAndIntensity;
 
-        Vec3f dir((Vec3f&) lights[i].mPositionAndSize - pos);
+        Vec3f dir((const Vec3f&) lights[i].mPositionAndSize - pos);
         float r2 = sqrlen(dir);
 
         float strength = lights[i].mColourAndIntensity[3] * scale;
