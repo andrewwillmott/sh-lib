@@ -112,10 +112,13 @@ const float ZHL::kZH_Y[7] =
 
 void ZHL::CalcZHWeights(float z, int numBands, float w[])
 {
+    VL_ASSERT(numBands >= 0 && numBands <= 7);
+
     float z2, z3, z4, z5, z6;
 
     z2 = z *  z;
     z3 = z * z2;
+
     if (numBands > 4)
     {
         z4 = z2 * z2;
@@ -139,15 +142,20 @@ void ZHL::CalcZHWeights(float z, int numBands, float w[])
         w[1] = kZH_Y_1 * z;
     case 1:
         w[0] = kZH_Y_0;
+    case 0:
+        break;
     }
 }
 
 float ZHL::SampleZH(float z, int numBands, const float zcoeffs[])
 {
+    VL_ASSERT(numBands >= 0 && numBands <= 7);
+
     float z2, z3, z4, z5, z6;
 
     z2 = z *  z;
     z3 = z * z2;
+
     if (numBands > 4)
     {
         z4 = z2 * z2;
@@ -155,7 +163,7 @@ float ZHL::SampleZH(float z, int numBands, const float zcoeffs[])
         z6 = z3 * z3;
     }
 
-    float result = kZH_Y_0 * zcoeffs[0];
+    float result = 0.0f;
 
     switch (numBands)
     {
@@ -171,6 +179,10 @@ float ZHL::SampleZH(float z, int numBands, const float zcoeffs[])
         result += zcoeffs[2] * kZH_Y_2 * (3 * z2 - 1);
     case 2:
         result += zcoeffs[1] * kZH_Y_1 * z;
+    case 1:
+        result += zcoeffs[0] * kZH_Y_0;
+    case 0:
+        break;
     }
 
     return result;
@@ -178,22 +190,28 @@ float ZHL::SampleZH(float z, int numBands, const float zcoeffs[])
 
 float ZHL::SampleZH_p1(int numBands, const float zcoeffs[])
 {
-    float result = kZH_Y_0 * zcoeffs[0];
+    VL_ASSERT(numBands >= 0 && numBands <= 7);
+
+    float result = 0.0f;
 
     switch (numBands)
     {
     case 7:
-        result += kZH_Y_6 * 16 * zcoeffs[6];
+        result += zcoeffs[6] * kZH_Y_6 * 16;
     case 6:
-        result += kZH_Y_5 * 8  * zcoeffs[5];
+        result += zcoeffs[5] * kZH_Y_5 * 8;
     case 5:
-        result += kZH_Y_4 * 8  * zcoeffs[4];
+        result += zcoeffs[4] * kZH_Y_4 * 8;
     case 4:
-        result += kZH_Y_3 * 2  * zcoeffs[3];
+        result += zcoeffs[3] * kZH_Y_3 * 2;
     case 3:
-        result += kZH_Y_2 * 2  * zcoeffs[2];
+        result += zcoeffs[2] * kZH_Y_2 * 2;
     case 2:
-        result += kZH_Y_1      * zcoeffs[1];
+        result += zcoeffs[1] * kZH_Y_1;
+    case 1:
+        result += zcoeffs[0] * kZH_Y_0;
+    case 0:
+        break;
     }
 
     return result;
@@ -201,6 +219,8 @@ float ZHL::SampleZH_p1(int numBands, const float zcoeffs[])
 
 void ZHL::AddZHSample(float x, float z, int numBands, float zcoeffs[])
 {
+    VL_ASSERT(numBands >= 0 && numBands <= 7);
+
     float z2, z3, z4, z5, z6;
 
     z2 = z *  z;
@@ -228,6 +248,8 @@ void ZHL::AddZHSample(float x, float z, int numBands, float zcoeffs[])
         zcoeffs[1] += x * kZH_Y_1 * z;
     case 1:
         zcoeffs[0] += x * kZH_Y_0;
+    case 0:
+        break;
     }
 }
 
@@ -434,7 +456,14 @@ void ZHL::CalcGatedCosBands5(float t, float bandScale[5])
     if (t >= 1.0f)
     {
         for (int i = 0; i < 5; i++)
-          bandScale[i] = 1.0f;
+            bandScale[i] = 1.0f;
+        return;
+    }
+
+    if (t <= -1.0f)
+    {
+        for (int i = 0; i < 5; i++)
+            bandScale[i] = 0.0f;
         return;
     }
 
@@ -519,8 +548,8 @@ void ZHL::ConvolveZH(int n, const float brdfCoeffs[], const float zhCoeffsIn[], 
 {
     for (int i = 0; i < n; i++)
     {
-        int n = (2 * i + 1);
-        float alpha = sqrtf(4.0f * vlf_pi / n);
+        int nb = (2 * i + 1);
+        float alpha = sqrtf(4.0f * vlf_pi / nb);
 
         zhCoeffsOut[i] = zhCoeffsIn[i] * brdfCoeffs[i] * alpha;
     }
@@ -592,6 +621,12 @@ namespace
         int8_t k;
         int8_t m;  // mode
         float  s;
+    };
+
+    const ZHBasisTriple kZHBasisTriples1[] =
+    {
+        { 0, 0, 0, 0, kZH_Y_0 },
+        { -1, -1, -1, -1, 0.0f }
     };
 
     const ZHBasisTriple kZHBasisTriples2[] =
@@ -708,8 +743,32 @@ namespace
     {
         VL_ASSERT((void*) a != c && b != c);
 
-        for (int i = 0; i < n; i++)
-            c[i] = vl_0;
+        if (triples->i >= 0)
+        {
+            VL_ASSERT(triples->i < n && triples->j < n && triples->k < n);
+
+            switch (triples->m)
+            {
+            case 0: // i == j == k
+                c[triples->k] = triples->s * a[triples->i] * b[triples->j];
+                break;
+            case 1: // j == k
+                c[triples->i] = triples->s * a[triples->j] * b[triples->j];
+                c[triples->j] = triples->s * (a[triples->k] * b[triples->i] + a[triples->i] * b[triples->k]);
+                break;
+            case 2: // i == j
+                c[triples->k] = triples->s * a[triples->i] * b[triples->j];
+                c[triples->i] = triples->s * (a[triples->j] * b[triples->k] + a[triples->k] * b[triples->j]);
+                break;
+            case 3: // i != j != k
+                c[triples->i] = triples->s * (a[triples->j] * b[triples->k] + a[triples->k] * b[triples->j]);
+                c[triples->j] = triples->s * (a[triples->k] * b[triples->i] + a[triples->i] * b[triples->k]);
+                c[triples->k] = triples->s * (a[triples->i] * b[triples->j] + a[triples->j] * b[triples->i]);
+                break;
+            }
+
+            triples++;
+        }
 
         while (triples->i >= 0)
         {
@@ -738,6 +797,24 @@ namespace
             triples++;
         }
     }
+
+    const ZHBasisTriple* const kZHBasisTriples[7] =
+    {
+        kZHBasisTriples1,
+        kZHBasisTriples2,
+        kZHBasisTriples3,
+        kZHBasisTriples4,
+        kZHBasisTriples5,
+        kZHBasisTriples6,
+        kZHBasisTriples7
+    };
+
+    template<typename T_SRC, typename T_DST> inline void MultiplyZH(int numBands, const T_SRC* a, const T_DST* b, T_DST* c)
+    {
+        VL_ASSERT(numBands >= 1 && numBands <= 7);
+
+        return MultiplyZH(numBands, a, b, c, kZHBasisTriples[numBands - 1]);
+    }
 }
 
 #ifdef _MSC_VER
@@ -746,34 +823,12 @@ namespace
 
 void ZHL::MultiplyZH(int numBands, const float* a, const float* b, float* c)
 {
-    switch (numBands)
-    {
-    case 1: c[0] = a[0] * b[0] * kZH_Y_0; break;
-    case 2: MultiplyZH(2, a, b, c, kZHBasisTriples2); break;
-    case 3: MultiplyZH(3, a, b, c, kZHBasisTriples3); break;
-    case 4: MultiplyZH(4, a, b, c, kZHBasisTriples4); break;
-    case 5: MultiplyZH(5, a, b, c, kZHBasisTriples5); break;
-    case 6: MultiplyZH(6, a, b, c, kZHBasisTriples6); break;
-    case 7: MultiplyZH(7, a, b, c, kZHBasisTriples7); break;
-    default:
-        VL_ERROR("Unhandled band count\n");
-    }
+    ::MultiplyZH<>(numBands, a, b, c);
 }
 
 void ZHL::MultiplyZH(int numBands, const Vec4f* a, const Vec4f* b, Vec4f* c)
 {
-    switch (numBands)
-    {
-    case 1: c[0] = a[0] * b[0] * kZH_Y_0; break;
-    case 2: MultiplyZH(2, a, b, c, kZHBasisTriples2); break;
-    case 3: MultiplyZH(3, a, b, c, kZHBasisTriples3); break;
-    case 4: MultiplyZH(4, a, b, c, kZHBasisTriples4); break;
-    case 5: MultiplyZH(5, a, b, c, kZHBasisTriples5); break;
-    case 6: MultiplyZH(6, a, b, c, kZHBasisTriples6); break;
-    case 7: MultiplyZH(7, a, b, c, kZHBasisTriples7); break;
-    default:
-        VL_ERROR("Unhandled band count\n");
-    }
+    ::MultiplyZH<>(numBands, a, b, c);
 }
 
 // Misc lighting
@@ -796,39 +851,37 @@ namespace
 void ZHL::CalcAtmosphereZH
 (
     int          numPhases,
-    const Vec4f* colourPhases,
+    const Vec4f  colourPhases[],
     int          bands,
-    Vec4f*       zcoeffs
+    Vec4f        zcoeffsOut[]
 )
 {
     VL_ASSERT(bands >=1 && bands <= 5);
 
-    Vec4f phaseCoeffs[5] = {};
-    float zh_coeffs[5];
+    Vec4f phaseCoeffs[5];
+    float zhCoeffs[5];
+
+    if (numPhases > 0)
+    {
+        CalcHGPhaseZH(colourPhases[0][3], 1.0f, bands, zhCoeffs);
+
+        for (int j = 0; j < bands; j++)
+            phaseCoeffs[j] = colourPhases[0] * zhCoeffs[j];
+    }
+    else
+        for (int j = 0; j < bands; j++)
+            phaseCoeffs[j] = vl_0;
 
     for (int i = 1; i < numPhases; i++)
     {
-        CalcHGPhaseZH(colourPhases[i][3], 1.0f, bands, zh_coeffs);
+        CalcHGPhaseZH(colourPhases[i][3], 1.0f, bands, zhCoeffs);
 
-        for (int i = 0; i < bands; i++)
-            phaseCoeffs[i] += colourPhases[i] * zh_coeffs[i];
+        for (int j = 0; j < bands; j++)
+            phaseCoeffs[j] += colourPhases[i] * zhCoeffs[j];
     }
 
     float termZHCoeffs[7];
     GetTerminatorZH7(termZHCoeffs);
 
-    switch (bands)
-    {
-    case 3:
-        ::MultiplyZH<float, Vec4f>(bands, termZHCoeffs, phaseCoeffs, zcoeffs, kZHBasisTriples3);
-        break;
-    case 4:
-        ::MultiplyZH<float, Vec4f>(bands, termZHCoeffs, phaseCoeffs, zcoeffs, kZHBasisTriples4);
-        break;
-    case 5:
-        ::MultiplyZH<float, Vec4f>(bands, termZHCoeffs, phaseCoeffs, zcoeffs, kZHBasisTriples5);
-        break;
-    default:
-        VL_ERROR("unhandled bands\n");
-    }
+    ::MultiplyZH<>(bands, termZHCoeffs, phaseCoeffs, zcoeffsOut);
 }

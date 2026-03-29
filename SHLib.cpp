@@ -497,7 +497,7 @@ void SHL::AddSHSample(float s, Vec3f v, int numBands, float coeffs[])
 
     for (int l = 5; l < numBands; l++)
         for (int m = -l; m <= l; m++)
-            *coeffs++ = s * SH(l, m, v);
+            *coeffs++ += s * SH(l, m, v);
 }
 
 void SHL::AddSHSample(Vec4f s, Vec3f v, int numBands, Vec4f coeffs[])
@@ -564,7 +564,7 @@ void SHL::AddSHSample(Vec4f s, Vec3f v, int numBands, Vec4f coeffs[])
 
     for (int l = 5; l < numBands; l++)
         for (int m = -l; m <= l; m++)
-            *coeffs++ = s * SH(l, m, v);
+            *coeffs++ += s * SH(l, m, v);
 }
 
 namespace
@@ -694,7 +694,7 @@ namespace
     const float kSqrt03_14  = sqrt( 3.0 / 14.0);
     const float kSqrt15_14  = sqrt(15.0 / 14.0);
     const float kSqrt04_15  = sqrt( 4.0 / 15.0);
-    const float kSqrt07_15  = sqrt( 7.0 / 10.0);
+    const float kSqrt07_15  = sqrt( 7.0 / 15.0);
     const float kSqrt14_15  = sqrt(14.0 / 15.0);
     const float kSqrt16_15  = sqrt(16.0 / 15.0);
     const float kSqrt01_16  = sqrt( 1.0 / 16.0);
@@ -846,7 +846,7 @@ namespace
         coeffs += 13;
         zcoeffs += 7;
 
-        for (int l = 8; l < n; l++)
+        for (int l = 7; l < n; l++)
         {
             T zl = *zcoeffs++ * sqrtf(kFourPi / (2 * l + 1));
 
@@ -1005,7 +1005,7 @@ namespace
         coeffs += 13;
         zcoeffs += 7;
 
-        for (int l = 8; l < n; l++)
+        for (int l = 7; l < n; l++)
         {
             T zl = *zcoeffs++ * sqrtf(kFourPi / (2 * l + 1));
 
@@ -2221,6 +2221,55 @@ namespace
 #pragma warning(pop)
 #endif
 
+void SHL::ApplyMaxScale(int n, float* coeffs)
+{
+    VL_ASSERT(n > 0);
+
+    (*coeffs++) *= kSH_Ym_00;
+
+    if (n < 2)
+        return;
+
+    (*coeffs++) *= kSH_Ym_10;
+    (*coeffs++) *= kSH_Ym_11;
+    (*coeffs++) *= kSH_Ym_12;
+
+    if (n < 3)
+        return;
+
+    (*coeffs++) *= kSH_Ym_20;
+    (*coeffs++) *= kSH_Ym_21;
+    (*coeffs++) *= kSH_Ym_22;
+    (*coeffs++) *= kSH_Ym_23;
+    (*coeffs++) *= kSH_Ym_24;
+
+    if (n < 4)
+        return;
+
+    (*coeffs++) *= kSH_Ym_30;
+    (*coeffs++) *= kSH_Ym_31;
+    (*coeffs++) *= kSH_Ym_32;
+    (*coeffs++) *= kSH_Ym_33;
+    (*coeffs++) *= kSH_Ym_34;
+    (*coeffs++) *= kSH_Ym_35;
+    (*coeffs++) *= kSH_Ym_36;
+
+    if (n < 5)
+        return;
+
+    (*coeffs++) *= kSH_Ym_40;
+    (*coeffs++) *= kSH_Ym_41;
+    (*coeffs++) *= kSH_Ym_42;
+    (*coeffs++) *= kSH_Ym_43;
+    (*coeffs++) *= kSH_Ym_44;
+    (*coeffs++) *= kSH_Ym_45;
+    (*coeffs++) *= kSH_Ym_46;
+    (*coeffs++) *= kSH_Ym_47;
+    (*coeffs++) *= kSH_Ym_48;
+
+    VL_ASSERT(n < 6);
+}
+
 void SHL::ApplyMaxScale(int n, Vec4f* coeffs)
 {
     VL_ASSERT(n > 0);
@@ -3339,7 +3388,7 @@ void SHL::FindSHCoeffsFromHDRCubeMap(const ImageData48* image, int numBands, Vec
 // This is the unoptimized version, to show more clearly what we're doing. Which
 // is just using the GatedSpot light model to represent the light as a sphere,
 // and accumulating everything into the destination.
-void SHL::AddSphereLighting(Vec3f pos, int numLights, SphereLight* lights, Vec4f* coeffs)
+void SHL::AddSphereLighting(Vec3f pos, float scale, int numLights, const SphereLight* lights, Vec4f* coeffs)
 {
     float zcoeffs[7];
     Vec4f zcoeffsColour[7];
@@ -3348,12 +3397,12 @@ void SHL::AddSphereLighting(Vec3f pos, int numLights, SphereLight* lights, Vec4f
     {
         const Vec4f& colour = lights[i].mColourAndIntensity;
 
-        Vec3f dir(pos - (Vec3f&) lights[i].mPositionAndSize);
+        Vec3f dir(pos - lights[i].mPositionAndSize.AsVec3());
         float r2 = sqrlen(dir);
 
-        float strength = lights[i].mColourAndIntensity[3];
+        float strength = lights[i].mColourAndIntensity.w * scale;
 
-        float a = lights[i].mPositionAndSize[3];
+        float a = lights[i].mPositionAndSize.w;
         float a2 = sqr(a);
 
         // The zcoeffs below are for f(z) = 1 for z > t.
@@ -3369,7 +3418,8 @@ void SHL::AddSphereLighting(Vec3f pos, int numLights, SphereLight* lights, Vec4f
         RotateZHToSHAdd(dir, 5, zcoeffsColour, coeffs);
     }
 }
-#endif
+
+#else
 
 void SHL::AddSphereLighting(Vec3f pos, float scale, int numLights, const SphereLight* lights, Vec4f* coeffs)
 {
@@ -3384,12 +3434,13 @@ void SHL::AddSphereLighting(Vec3f pos, float scale, int numLights, const SphereL
     {
         const Vec4f& colour = lights[i].mColourAndIntensity;
 
-        Vec3f dir((const Vec3f&) lights[i].mPositionAndSize - pos);
+        Vec3f dir(lights[i].mPositionAndSize.AsVec3() - pos);
+
         float r2 = sqrlen(dir);
 
-        float strength = lights[i].mColourAndIntensity[3] * scale;
+        float strength = lights[i].mColourAndIntensity.w * scale;
 
-        float a = lights[i].mPositionAndSize[3];
+        float a = lights[i].mPositionAndSize.w;
         float a2 = sqr(a);
 
         // See CalcGatedSpotZH7
@@ -3413,3 +3464,5 @@ void SHL::AddSphereLighting(Vec3f pos, float scale, int numLights, const SphereL
         RotateZHToSHAdd(dir, bands, zcoeffs, coeffs);
     }
 }
+
+#endif
